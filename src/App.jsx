@@ -4,15 +4,17 @@ import { CompanyProvider } from './context/CompanyContext'
 import ProtectedRoute from './components/common/ProtectedRoute'
 import AppShell from './components/layout/AppShell'
 
-import LoginPage      from './pages/auth/LoginPage'
-import RegisterPage   from './pages/auth/RegisterPage'
-import AdminDashboard from './pages/admin/AdminDashboard'
-import MemberManager  from './pages/department/MemberManager'
-import DeptDashboard  from './pages/department/DeptDashboard'
-import MyTasks        from './pages/member/MyTasks'
-import AllTasks       from './pages/member/AllTasks'
-import WorkUpload     from './pages/member/WorkUpload'
-import ReportsPage    from './pages/shared/ReportsPage'
+import LoginPage           from './pages/auth/LoginPage'
+import RegisterPage        from './pages/auth/RegisterPage'
+import AdminDashboard      from './pages/admin/AdminDashboard'
+import MemberManager       from './pages/department/MemberManager'
+import DeptDashboard       from './pages/department/DeptDashboard'
+import MyTasks             from './pages/member/MyTasks'
+import AllTasks            from './pages/member/AllTasks'
+import WorkUpload          from './pages/member/WorkUpload'
+import ReportsPage         from './pages/shared/ReportsPage'
+import SuperAdminLogin     from './pages/superadmin/SuperAdminLogin'
+import SuperAdminDashboard from './pages/superadmin/SuperAdminDashboard'
 
 const Unauthorized = () => (
   <div style={{ padding:'40px', textAlign:'center', fontSize:'14px', color:'#888' }}>
@@ -33,15 +35,19 @@ const App = () => (
     <AuthProvider>
       <CompanyProvider>
         <Routes>
-          <Route path="/"            element={<Navigate to="/login" replace />} />
-          <Route path="/login"       element={<LoginPage />} />
-          <Route path="/register"    element={<RegisterPage />} />
-          <Route path="/unauthorized"element={<Unauthorized />} />
+          <Route path="/"             element={<Navigate to="/login" replace />} />
+          <Route path="/login"        element={<LoginPage />} />
+          <Route path="/register"     element={<RegisterPage />} />
+          <Route path="/unauthorized" element={<Unauthorized />} />
+
+          {/* Super Admin — separate login, no AppShell */}
+          <Route path="/superadmin/login" element={<SuperAdminLogin />} />
+          <Route path="/superadmin"       element={<SuperAdminDashboard />} />
 
           {/* Admin */}
-          <Route path="/admin"              element={wrap(['admin'], AdminDashboard)} />
-          <Route path="/admin/departments"  element={wrap(['admin'], AdminDashboard)} />
-          <Route path="/admin/reports"      element={wrap(['admin'], ReportsPage)} />
+          <Route path="/admin"             element={wrap(['admin'], AdminDashboard)} />
+          <Route path="/admin/departments" element={wrap(['admin'], AdminDashboard)} />
+          <Route path="/admin/reports"     element={wrap(['admin'], ReportsPage)} />
 
           {/* Dept head */}
           <Route path="/dept"         element={wrap(['dept_head'], DeptDashboard)} />
@@ -51,10 +57,10 @@ const App = () => (
           <Route path="/dept/reports" element={wrap(['dept_head'], ReportsPage)} />
 
           {/* Member */}
-          <Route path="/member"            element={wrap(['member'], MyTasks)} />
-          <Route path="/member/all-tasks"  element={wrap(['member'], AllTasks)} />
-          <Route path="/member/uploads"    element={wrap(['member'], WorkUpload)} />
-          <Route path="/member/reports"    element={wrap(['member'], ReportsPage)} />
+          <Route path="/member"           element={wrap(['member'], MyTasks)} />
+          <Route path="/member/all-tasks" element={wrap(['member'], AllTasks)} />
+          <Route path="/member/uploads"   element={wrap(['member'], WorkUpload)} />
+          <Route path="/member/reports"   element={wrap(['member'], ReportsPage)} />
         </Routes>
       </CompanyProvider>
     </AuthProvider>
