@@ -4,7 +4,6 @@ import {
 } from 'firebase/firestore'
 import { db } from './config'
 
-// ─── COMPANY ───────────────────────────────────────────────
 export const createCompany = async (companyId, data) => {
   await setDoc(doc(db, 'companies', companyId), {
     ...data,
@@ -17,7 +16,6 @@ export const getCompany = async (companyId) => {
   return snap.exists() ? snap.data() : null
 }
 
-// ─── DEPARTMENTS ────────────────────────────────────────────
 export const createDepartment = async (companyId, deptId, data) => {
   await setDoc(doc(db, 'companies', companyId, 'departments', deptId), {
     ...data,
@@ -30,7 +28,6 @@ export const getDepartments = async (companyId) => {
   return snap.docs.map(d => ({ id: d.id, ...d.data() }))
 }
 
-// ─── USERS (admin / dept head / member all live here) ───────
 export const createUser = async (companyId, userId, data) => {
   await setDoc(doc(db, 'companies', companyId, 'users', userId), {
     ...data,
@@ -46,16 +43,17 @@ export const getUser = async (companyId, userId) => {
 }
 
 export const getMembersByDept = async (companyId, deptId) => {
-  const q = query(
-    collection(db, 'companies', companyId, 'users'),
-    where('deptId', '==', deptId),
-    where('role', '==', 'member')
-  )
-  const snap = await getDocs(q)
-  return snap.docs.map(d => d.data())
+  // Get ALL users in company then filter by deptId
+  const snap = await getDocs(collection(db, 'companies', companyId, 'users'))
+  const all = snap.docs.map(d => d.data())
+  return all.filter(u => u.deptId === deptId && u.role === 'member')
 }
 
-// ─── TASKS ──────────────────────────────────────────────────
+export const getAllMembers = async (companyId) => {
+  const snap = await getDocs(collection(db, 'companies', companyId, 'users'))
+  return snap.docs.map(d => d.data()).filter(u => u.role === 'member')
+}
+
 export const createTask = async (companyId, taskData) => {
   const ref = await addDoc(collection(db, 'companies', companyId, 'tasks'), {
     ...taskData,
@@ -75,26 +73,16 @@ export const updateTask = async (companyId, taskId, updates) => {
 }
 
 export const getTasksByDept = async (companyId, deptId) => {
-  const q = query(
-    collection(db, 'companies', companyId, 'tasks'),
-    where('deptId', '==', deptId),
-    orderBy('createdAt', 'desc')
-  )
-  const snap = await getDocs(q)
-  return snap.docs.map(d => ({ id: d.id, ...d.data() }))
+  const snap = await getDocs(collection(db, 'companies', companyId, 'tasks'))
+  const all = snap.docs.map(d => ({ id: d.id, ...d.data() }))
+  return deptId ? all.filter(t => t.deptId === deptId) : all
 }
 
 export const getTasksByAssignee = async (companyId, assigneeId) => {
-  const q = query(
-    collection(db, 'companies', companyId, 'tasks'),
-    where('assignedTo', '==', assigneeId),
-    orderBy('createdAt', 'desc')
-  )
-  const snap = await getDocs(q)
-  return snap.docs.map(d => ({ id: d.id, ...d.data() }))
+  const snap = await getDocs(collection(db, 'companies', companyId, 'tasks'))
+  return snap.docs.map(d => ({ id: d.id, ...d.data() })).filter(t => t.assignedTo === assigneeId)
 }
 
-// ─── UPLOADS ────────────────────────────────────────────────
 export const createUpload = async (companyId, uploadData) => {
   const ref = await addDoc(collection(db, 'companies', companyId, 'uploads'), {
     ...uploadData,
@@ -112,11 +100,6 @@ export const updateUpload = async (companyId, uploadId, updates) => {
 }
 
 export const getUploadsByMember = async (companyId, memberId) => {
-  const q = query(
-    collection(db, 'companies', companyId, 'uploads'),
-    where('submittedBy', '==', memberId),
-    orderBy('createdAt', 'desc')
-  )
-  const snap = await getDocs(q)
-  return snap.docs.map(d => ({ id: d.id, ...d.data() }))
+  const snap = await getDocs(collection(db, 'companies', companyId, 'uploads'))
+  return snap.docs.map(d => ({ id: d.id, ...d.data() })).filter(u => u.submittedBy === memberId)
 }
