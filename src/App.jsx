@@ -4,6 +4,7 @@ import { CompanyProvider } from './context/CompanyContext'
 import ProtectedRoute from './components/common/ProtectedRoute'
 import AppShell from './components/layout/AppShell'
 
+import LandingPage         from './pages/LandingPage'
 import LoginPage           from './pages/auth/LoginPage'
 import RegisterPage        from './pages/auth/RegisterPage'
 import AdminDashboard      from './pages/admin/AdminDashboard'
@@ -35,12 +36,13 @@ const App = () => (
     <AuthProvider>
       <CompanyProvider>
         <Routes>
-          <Route path="/"             element={<Navigate to="/login" replace />} />
+          {/* Landing page — public homepage */}
+          <Route path="/"             element={<LandingPage />} />
           <Route path="/login"        element={<LoginPage />} />
           <Route path="/register"     element={<RegisterPage />} />
           <Route path="/unauthorized" element={<Unauthorized />} />
 
-          {/* Super Admin — separate login, no AppShell */}
+          {/* Super Admin */}
           <Route path="/superadmin/login" element={<SuperAdminLogin />} />
           <Route path="/superadmin"       element={<SuperAdminDashboard />} />
 
