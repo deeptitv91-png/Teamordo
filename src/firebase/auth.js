@@ -33,3 +33,8 @@ export const createUserAccount = async (userId, password, companyId, profileData
 
   return cred.user
 }
+
+export const sendVerificationEmail = async (firebaseUser) => {
+  const { sendEmailVerification } = await import('firebase/auth')
+  await sendEmailVerification(firebaseUser)
+}
