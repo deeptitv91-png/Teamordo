@@ -1,24 +1,24 @@
 export const generateCompanyId = (companyName) => {
-  const prefix = companyName.replace(/\s+/g, '').substring(0, 4).toUpperCase()
+  const clean  = companyName.replace(/\s+/g, '-').toUpperCase().replace(/[^A-Z0-9-]/g, '')
   const suffix = Math.random().toString(36).substring(2, 6).toUpperCase()
-  return `CORP-${prefix}-${suffix}`
+  return `CORP-${clean}-${suffix}`
 }
 
 export const generateDeptId = (deptName, index) => {
-  const prefix = deptName.replace(/\s+/g, '').substring(0, 3).toUpperCase()
-  const num = String(index).padStart(3, '0')
-  return `DEPT-${prefix}-${num}`
+  const clean = deptName.replace(/\s+/g, '-').toUpperCase().replace(/[^A-Z0-9-]/g, '')
+  const num   = String(index).padStart(3, '0')
+  return `DEPT-${clean}-${num}`
 }
 
 export const generateMemberId = (companyId, counter) => {
-  const co = companyId.split('-')[1] || 'XX'
+  const co  = companyId.split('-').slice(1, -1).join('-')
   const num = String(counter).padStart(4, '0')
   return `MEM-${co}-${num}`
 }
 
 export const generatePassword = (name) => {
   const base = name.split(' ')[0].toLowerCase()
-  const num = Math.floor(1000 + Math.random() * 9000)
+  const num  = Math.floor(1000 + Math.random() * 9000)
   return `${base}@${num}`
 }
 
