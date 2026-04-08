@@ -1,35 +1,39 @@
-import { signInWithEmailAndPassword, signOut, createUserWithEmailAndPassword } from 'firebase/auth'
+import { signInWithEmailAndPassword, signOut, createUserWithEmailAndPassword, signInWithCustomToken } from 'firebase/auth'
 import { doc, getDoc, setDoc } from 'firebase/firestore'
 import { auth, db } from './config'
+import { initializeApp } from 'firebase/app'
+import { getAuth } from 'firebase/auth'
 
-// All Teamordo users sign in with email (their ID@company.teamordo.com) + password
-// The ID prefix tells the system what role they have
+// Secondary Firebase app to create users without affecting current session
+import app from './config'
+
+const secondaryApp = initializeApp(app.options, 'Secondary')
+const secondaryAuth = getAuth(secondaryApp)
 
 export const loginUser = async (userId, password, companyId) => {
-  // Convert userId to firebase email format
   const email = `${userId.toLowerCase()}@${companyId.toLowerCase()}.teamordo.internal`
   const cred = await signInWithEmailAndPassword(auth, email, password)
-
-  // Fetch user profile from Firestore
   const userDoc = await getDoc(doc(db, 'companies', companyId, 'users', userId))
   if (!userDoc.exists()) throw new Error('User profile not found.')
-
   return { uid: cred.user.uid, ...userDoc.data() }
 }
 
 export const logoutUser = () => signOut(auth)
 
 export const createUserAccount = async (userId, password, companyId, profileData) => {
+  // Use secondary app so admin session is not affected
   const email = `${userId.toLowerCase()}@${companyId.toLowerCase()}.teamordo.internal`
-  const cred = await createUserWithEmailAndPassword(auth, email, password)
+  const cred = await createUserWithEmailAndPassword(secondaryAuth, email, password)
 
-  // Save profile to Firestore
   await setDoc(doc(db, 'companies', companyId, 'users', userId), {
     ...profileData,
     userId,
     companyId,
     createdAt: new Date().toISOString(),
   })
+
+  // Sign out from secondary app immediately
+  await signOut(secondaryAuth)
 
   return cred.user
 }
