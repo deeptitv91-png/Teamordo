@@ -3,11 +3,14 @@ import { useState } from 'react'
 const TaskForm = ({ members = [], currentUser, onSubmit, onCancel }) => {
   const [form, setForm] = useState({ title:'', assignedTo:'', deadline:'' })
 
-  const eligible = members.filter(m => m.userId !== currentUser?.userId)
+  const canAssignToSelf = true
+  const eligible = members // Manager and Lead can assign to anyone including themselves
 
   const handleSubmit = () => {
-    if (!form.title || !form.assignedTo || !form.deadline) return
-    onSubmit({ ...form, assignedBy: currentUser?.userId, deptId: currentUser?.deptId })
+    if (!form.title.trim()) return
+    if (!form.assignedTo) return
+    if (!form.deadline) return
+    onSubmit({ ...form, assignedBy: currentUser?.userId, deptId: currentUser?.deptId, companyId: currentUser?.companyId })
     setForm({ title:'', assignedTo:'', deadline:'' })
   }
 
@@ -23,7 +26,11 @@ const TaskForm = ({ members = [], currentUser, onSubmit, onCancel }) => {
           <label style={lbl}>Assign to</label>
           <select style={inp} value={form.assignedTo} onChange={e => setForm(p=>({...p,assignedTo:e.target.value}))}>
             <option value="">Select member...</option>
-            {eligible.map(m => <option key={m.userId} value={m.userId}>{m.name} — {m.designation}</option>)}
+            {eligible.map(m => (
+              <option key={m.userId} value={m.userId}>
+                {m.name} — {m.designation} ({m.category})
+              </option>
+            ))}
           </select>
         </div>
         <div>
@@ -35,8 +42,12 @@ const TaskForm = ({ members = [], currentUser, onSubmit, onCancel }) => {
         You ({currentUser?.name}) will be the task creator and give the final L2 approval.
       </div>
       <div style={{ display:'flex', gap:'8px' }}>
-        <button onClick={handleSubmit} style={{ padding:'7px 16px', fontSize:'12px', fontWeight:500, background:'#378ADD', color:'#fff', border:'none', borderRadius:'8px', cursor:'pointer' }}>Create task</button>
-        <button onClick={onCancel} style={{ padding:'7px 16px', fontSize:'12px', border:'0.5px solid rgba(0,0,0,0.15)', borderRadius:'8px', cursor:'pointer', background:'transparent' }}>Cancel</button>
+        <button onClick={handleSubmit} style={{ padding:'7px 16px', fontSize:'12px', fontWeight:500, background:'#378ADD', color:'#fff', border:'none', borderRadius:'8px', cursor:'pointer' }}>
+          Create task
+        </button>
+        <button onClick={onCancel} style={{ padding:'7px 16px', fontSize:'12px', border:'0.5px solid rgba(0,0,0,0.15)', borderRadius:'8px', cursor:'pointer', background:'transparent' }}>
+          Cancel
+        </button>
       </div>
     </div>
   )
