@@ -1,6 +1,3 @@
-// All IDs are unique within a company
-// Prefix determines role automatically on login
-
 export const generateCompanyId = (companyName) => {
   const prefix = companyName.replace(/\s+/g, '').substring(0, 4).toUpperCase()
   const suffix = Math.random().toString(36).substring(2, 6).toUpperCase()
@@ -25,8 +22,8 @@ export const generatePassword = (name) => {
   return `${base}@${num}`
 }
 
-// Detect role from ID prefix — no dropdown needed
 export const detectRoleFromId = (userId) => {
+  if (!userId) return null
   if (userId.startsWith('CORP-')) return 'admin'
   if (userId.startsWith('DEPT-')) return 'dept_head'
   if (userId.startsWith('MEM-'))  return 'member'
