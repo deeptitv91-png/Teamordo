@@ -1,0 +1,116 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // ─── Helper functions ───────────────────────────────────────────────────
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function getUserId() {
+      // Email format: userid@companyid.teamordo.internal
+      return request.auth.token.email.split('@')[0].upper();
+    }
+
+    function getCompanyIdFromEmail() {
+      return request.auth.token.email.split('@')[1].replace('.teamordo.internal', '').upper();
+    }
+
+    function belongsToCompany(companyId) {
+      return isSignedIn() && getCompanyIdFromEmail() == companyId;
+    }
+
+    function isAdmin(companyId) {
+      return belongsToCompany(companyId) && getUserId().matches('CORP-.*');
+    }
+
+    function isDeptHead(companyId) {
+      return belongsToCompany(companyId) && getUserId().matches('DEPT-.*');
+    }
+
+    function isMember(companyId) {
+      return belongsToCompany(companyId) && getUserId().matches('MEM-.*');
+    }
+
+    function isAnyUser(companyId) {
+      return isAdmin(companyId) || isDeptHead(companyId) || isMember(companyId);
+    }
+
+    // ─── Company document ───────────────────────────────────────────────────
+    match /companies/{companyId} {
+      allow read:   if isAnyUser(companyId);
+      allow create: if isSignedIn(); // During registration
+      allow update: if isAdmin(companyId);
+      allow delete: if false;
+
+      // ─── Departments ──────────────────────────────────────────────────────
+      match /departments/{deptId} {
+        allow read:   if isAnyUser(companyId);
+        allow create: if isAdmin(companyId);
+        allow update: if isAdmin(companyId) || isDeptHead(companyId);
+        allow delete: if isAdmin(companyId);
+      }
+
+      // ─── Users (all roles live here) ─────────────────────────────────────
+      match /users/{userId} {
+        // Everyone in company can read user profiles (for task assignment display)
+        allow read:   if isAnyUser(companyId);
+        // Admin can create any user, dept head can create members, member cannot create
+        allow create: if isAdmin(companyId) || isDeptHead(companyId) || isSignedIn();
+        // User can update their own profile; admin can update anyone
+        allow update: if isAdmin(companyId)
+                      || (isAnyUser(companyId) && getUserId() == userId);
+        allow delete: if isAdmin(companyId);
+      }
+
+      // ─── Tasks ────────────────────────────────────────────────────────────
+      match /tasks/{taskId} {
+        // Everyone in the company can read all tasks (view-only for non-owners)
+        allow read: if isAnyUser(companyId);
+
+        // Any authenticated company member can create a task
+        allow create: if isAnyUser(companyId)
+                      && request.resource.data.assignedBy == getUserId()
+                      && request.resource.data.companyId == companyId;
+
+        // Updates are restricted by role and field:
+        allow update: if isAnyUser(companyId) && (
+          // Assignee can update status (start, submit for completion)
+          (getUserId() == resource.data.assignedTo
+            && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['status','updatedAt']))
+          ||
+          // Manager/Lead (dept head or manager category) can give L1 approval
+          (isDeptHead(companyId) && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['status','l1By','updatedAt']))
+          ||
+          // Task creator gives L2 approval
+          (getUserId() == resource.data.assignedBy
+            && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['status','l2By','updatedAt']))
+          ||
+          // Admin can update anything
+          isAdmin(companyId)
+        );
+
+        allow delete: if isAdmin(companyId) || isDeptHead(companyId);
+      }
+
+      // ─── Uploads ─────────────────────────────────────────────────────────
+      match /uploads/{uploadId} {
+        // Everyone in company can read uploads
+        allow read: if isAnyUser(companyId);
+
+        // Member can create their own upload
+        allow create: if isAnyUser(companyId)
+                      && request.resource.data.submittedBy == getUserId();
+
+        // Submitter can update (resubmit); reviewer (dept head/admin) can update status
+        allow update: if isAnyUser(companyId) && (
+          getUserId() == resource.data.submittedBy
+          || isDeptHead(companyId)
+          || isAdmin(companyId)
+        );
+
+        allow delete: if isAdmin(companyId);
+      }
+    }
+  }
+}
