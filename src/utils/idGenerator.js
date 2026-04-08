@@ -4,6 +4,14 @@ export const generateCompanyId = (companyName) => {
   return `CORP-${clean}-${suffix}`
 }
 
+export const generateCompanySlug = (companyName) => {
+  return companyName
+    .toLowerCase()
+    .replace(/[^a-z0-9\s]/g, '')
+    .trim()
+    .replace(/\s+/g, '-')
+}
+
 export const generateDeptId = (deptName, index) => {
   const clean = deptName.replace(/\s+/g, '-').toUpperCase().replace(/[^A-Z0-9-]/g, '')
   const num   = String(index).padStart(3, '0')
