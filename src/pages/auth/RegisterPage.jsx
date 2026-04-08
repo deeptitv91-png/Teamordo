@@ -1,18 +1,34 @@
-import { useState } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
-import { createCompany, createUser } from '../../firebase/firestore'
+import { createCompany } from '../../firebase/firestore'
 import { createUserAccount } from '../../firebase/auth'
 import { generateCompanyId, generatePassword } from '../../utils/idGenerator'
-import { sendEmailVerification } from 'firebase/auth'
-import { auth } from '../../firebase/config'
 import Notify from '../../components/common/Notify'
+
+const RECAPTCHA_SITE_KEY = '6LfXi60sAAAAAJB1kcuFDUmnk7zl6-UiiPoqnJq6'
 
 const RegisterPage = () => {
   const [form, setForm] = useState({ companyName:'', address:'', numDepts:'', adminEmail:'' })
   const [loading, setLoading] = useState(false)
   const [notify, setNotify] = useState(null)
   const [credentials, setCredentials] = useState(null)
+  const [captchaVerified, setCaptchaVerified] = useState(false)
+  const captchaRef = useRef(null)
   const navigate = useNavigate()
+
+  useEffect(() => {
+    // Load reCAPTCHA script
+    const script = document.createElement('script')
+    script.src = 'https://www.google.com/recaptcha/api.js'
+    script.async = true
+    script.defer = true
+    document.head.appendChild(script)
+
+    window.onCaptchaSuccess = () => setCaptchaVerified(true)
+    window.onCaptchaExpired = () => setCaptchaVerified(false)
+
+    return () => { document.head.removeChild(script) }
+  }, [])
 
   const handleChange = (k) => (e) => setForm(f => ({ ...f, [k]: e.target.value }))
 
@@ -20,6 +36,9 @@ const RegisterPage = () => {
     e.preventDefault()
     if (!form.companyName || !form.address || !form.numDepts || !form.adminEmail) {
       setNotify({ msg:'Please fill all fields.', type:'err' }); return
+    }
+    if (!captchaVerified) {
+      setNotify({ msg:'Please complete the reCAPTCHA verification.', type:'err' }); return
     }
     setLoading(true)
     try {
@@ -37,7 +56,7 @@ const RegisterPage = () => {
         deptCounter: 0,
       })
 
-      const firebaseUser = await createUserAccount(adminId, adminPw, companyId, {
+      await createUserAccount(adminId, adminPw, companyId, {
         name: form.companyName + ' Admin',
         role: 'admin',
         companyId,
@@ -45,15 +64,8 @@ const RegisterPage = () => {
         email: form.adminEmail,
       })
 
-      // Send verification email
-      try {
-        await sendEmailVerification(firebaseUser)
-        setNotify({ msg:'Verification email sent! Please check your inbox.', type:'ok' })
-      } catch (emailErr) {
-        console.log('Verification email error:', emailErr)
-      }
-
       setCredentials({ companyId, adminId, adminPw, numDepts: parseInt(form.numDepts) })
+      setNotify({ msg:'Company registered successfully!', type:'ok' })
     } catch (err) {
       setNotify({ msg: 'Registration failed: ' + err.message, type: 'err' })
     } finally {
@@ -75,37 +87,51 @@ const RegisterPage = () => {
           {!credentials ? (
             <form onSubmit={handleRegister}>
               {[
-                { key:'companyName', label:'Company name',            placeholder:'e.g. Acme Technologies Pvt Ltd' },
-                { key:'adminEmail',  label:'Admin email',             placeholder:'admin@yourcompany.com' },
-                { key:'numDepts',    label:'Number of departments',   placeholder:'e.g. 4', type:'number' },
+                { key:'companyName', label:'Company name',          placeholder:'e.g. Acme Technologies Pvt Ltd' },
+                { key:'adminEmail',  label:'Admin email',           placeholder:'admin@yourcompany.com' },
+                { key:'numDepts',    label:'Number of departments', placeholder:'e.g. 4', type:'number' },
               ].map(f => (
                 <div key={f.key} style={{ marginBottom:'12px' }}>
                   <label style={labelStyle}>{f.label}</label>
                   <input style={inputStyle} type={f.type||'text'} placeholder={f.placeholder} value={form[f.key]} onChange={handleChange(f.key)} />
                 </div>
               ))}
-              <div style={{ marginBottom:'20px' }}>
+              <div style={{ marginBottom:'16px' }}>
                 <label style={labelStyle}>Company address</label>
                 <textarea style={{ ...inputStyle, height:'64px', resize:'none' }} placeholder="Full address..." value={form.address} onChange={handleChange('address')} />
               </div>
-              <button type="submit" disabled={loading} style={primaryBtn}>
+
+              <div style={{ marginBottom:'16px' }}>
+                <div
+                  className="g-recaptcha"
+                  data-sitekey={RECAPTCHA_SITE_KEY}
+                  data-callback="onCaptchaSuccess"
+                  data-expired-callback="onCaptchaExpired"
+                />
+              </div>
+
+              <button type="submit" disabled={loading || !captchaVerified} style={{
+                ...primaryBtn,
+                opacity: (!captchaVerified || loading) ? 0.6 : 1,
+                cursor: (!captchaVerified || loading) ? 'not-allowed' : 'pointer',
+              }}>
                 {loading ? 'Registering...' : 'Register & generate credentials'}
               </button>
             </form>
           ) : (
             <div>
               <div style={{ fontSize:'14px', fontWeight:500, marginBottom:'4px', color:'#27500A' }}>Registration successful!</div>
-              <div style={{ fontSize:'12px', color:'#888', marginBottom:'16px' }}>A verification email has been sent to {form.adminEmail}. Please verify before logging in.</div>
+              <div style={{ fontSize:'12px', color:'#888', marginBottom:'16px' }}>Save these credentials securely. You will need them to login.</div>
 
               <div style={{ background:'#F8F8F6', borderRadius:'8px', padding:'14px', marginBottom:'16px' }}>
-                <div style={{ fontSize:'11px', fontWeight:500, color:'#666', marginBottom:'10px', textTransform:'uppercase', letterSpacing:'0.04em' }}>Admin credentials — save these!</div>
+                <div style={{ fontSize:'11px', fontWeight:500, color:'#666', marginBottom:'10px', textTransform:'uppercase', letterSpacing:'0.04em' }}>Admin credentials</div>
                 {[
                   { label:'Company ID', value: credentials.companyId },
                   { label:'Admin ID',   value: credentials.adminId },
                   { label:'Password',   value: credentials.adminPw },
                   { label:'Departments to set up', value: credentials.numDepts },
                 ].map(row => (
-                  <div key={row.label} style={{ display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:'8px' }}>
+                  <div key={row.label} style={{ display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:'8px', paddingBottom:'8px', borderBottom:'0.5px solid rgba(0,0,0,0.06)' }}>
                     <span style={{ fontSize:'11px', color:'#888' }}>{row.label}</span>
                     <span style={{ fontSize:'13px', fontWeight:500, fontFamily:'monospace' }}>{row.value}</span>
                   </div>
@@ -113,7 +139,7 @@ const RegisterPage = () => {
               </div>
 
               <div style={{ fontSize:'11px', color:'#888', background:'#FAEEDA', padding:'10px 12px', borderRadius:'8px', marginBottom:'16px', border:'0.5px solid #FAC775' }}>
-                Next: Verify your email → Login as admin → Create departments → Share dept IDs with your department heads.
+                Next: Login as admin → Create departments → Share dept IDs with your department heads.
               </div>
 
               <button onClick={() => navigate('/login')} style={primaryBtn}>Go to login</button>
