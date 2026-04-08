@@ -7,6 +7,7 @@ import AppShell from './components/layout/AppShell'
 import LandingPage         from './pages/LandingPage'
 import LoginPage           from './pages/auth/LoginPage'
 import RegisterPage        from './pages/auth/RegisterPage'
+import CompanyLoginPage    from './pages/auth/CompanyLoginPage'
 import AdminDashboard      from './pages/admin/AdminDashboard'
 import MemberManager       from './pages/department/MemberManager'
 import DeptDashboard       from './pages/department/DeptDashboard'
@@ -36,11 +37,13 @@ const App = () => (
     <AuthProvider>
       <CompanyProvider>
         <Routes>
-          {/* Landing page — public homepage */}
           <Route path="/"             element={<LandingPage />} />
           <Route path="/login"        element={<LoginPage />} />
           <Route path="/register"     element={<RegisterPage />} />
           <Route path="/unauthorized" element={<Unauthorized />} />
+
+          {/* Company-specific login — e.g. /acme-technologies */}
+          <Route path="/:slug"        element={<CompanyLoginPage />} />
 
           {/* Super Admin */}
           <Route path="/superadmin/login" element={<SuperAdminLogin />} />
