@@ -33,3 +33,11 @@ export const getStatusMeta = (status) => {
   }
   return map[status] || map.todo
 }
+
+export const detectRoleFromId = (userId) => {
+  if (!userId) return null
+  if (userId.startsWith('CORP-')) return 'admin'
+  if (userId.startsWith('DEPT-')) return 'dept_head'
+  if (userId.startsWith('MEM-'))  return 'member'
+  return null
+}
