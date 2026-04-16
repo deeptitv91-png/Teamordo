@@ -68,6 +68,28 @@ const TaskCard = ({ task, currentUser, members, onAction }) => {
         <Badge label={status.label} color={status.color} textColor={status.text} />
       </div>
 
+      {/* Work submission link — visible to everyone */}
+      {task.workLink && (
+        <div style={{ marginBottom:'10px' }}>
+          <div style={{ fontSize:'11px', fontWeight:600, color:'#0C447C', marginBottom:'4px', textTransform:'uppercase', letterSpacing:'0.04em' }}>
+            Work submitted{task.workTitle ? ': ' + task.workTitle : ''}
+          </div>
+          
+            href={task.workLink}
+            target="_blank"
+            rel="noreferrer"
+            style={{
+              display:'inline-flex', alignItems:'center', gap:'5px',
+              fontSize:'12px', color:'#378ADD',
+              background:'#E6F1FB', padding:'5px 14px',
+              borderRadius:'6px', textDecoration:'none', fontWeight:500,
+            }}
+          >
+            View work →
+          </a>
+        </div>
+      )}
+
       {/* Rejection reason — show if task was sent back */}
       {task.rejectReason && (task.status === 'inprogress' || task.status === 'todo') && (
         <div style={{

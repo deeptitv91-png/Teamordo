@@ -53,6 +53,14 @@ const WorkUpload = ({ viewAll = false }) => {
         reviewNote:  '',
         reviewedBy:  null,
       })
+
+      // Also save work link directly on the task so everyone can see it
+      const { updateTask } = await import('../../firebase/firestore')
+      await updateTask(user.companyId, selectedTask, {
+        workLink:    link,
+        workTitle:   title,
+        workSubmittedBy: user.userId,
+      })
       setSelectedTask('')
       setNotify({ msg:'Work submitted! Your reviewer will be notified.', type:'ok' })
       loadUploads()
