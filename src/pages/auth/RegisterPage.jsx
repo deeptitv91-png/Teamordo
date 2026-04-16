@@ -75,6 +75,11 @@ const RegisterPage = () => {
   return (
     <div style={{ minHeight:'100vh', background:'#F8F8F6', display:'flex', alignItems:'center', justifyContent:'center', padding:'20px', fontFamily:'system-ui,sans-serif' }}>
       <div style={{ width:'100%', maxWidth:'440px' }}>
+        <div style={{ marginBottom:'20px' }}>
+          <button onClick={() => navigate('/')} style={{ background:'none', border:'none', fontSize:'13px', color:'#888', cursor:'pointer', fontFamily:'inherit', display:'flex', alignItems:'center', gap:'4px' }}>
+            ← Back to home
+          </button>
+        </div>
         <div style={{ textAlign:'center', marginBottom:'24px' }}>
           <div style={{ fontSize:'26px', fontWeight:600, letterSpacing:'-0.02em' }}>Team<span style={{ color:'#378ADD', fontWeight:400 }}>ordo</span></div>
           <div style={{ fontSize:'13px', color:'#888', marginTop:'4px' }}>Register your company</div>
