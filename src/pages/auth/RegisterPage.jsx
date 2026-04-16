@@ -5,7 +5,7 @@ import { createUserAccount } from '../../firebase/auth'
 import { generateCompanyId, generatePassword, generateCompanySlug } from '../../utils/idGenerator'
 import Notify from '../../components/common/Notify'
 
-const RECAPTCHA_SITE_KEY = '6LfXi60sAAAAAJB1kcuFDUmnk7zl6-UiiPoqnJq6'
+const RECAPTCHA_SITE_KEY = '6LfhFrosAAAAAlayIgccvOweNjThIY9EX43TRsak'
 
 const RegisterPage = () => {
   const [form, setForm]             = useState({ companyName:'', address:'', numDepts:'', adminEmail:'' })
