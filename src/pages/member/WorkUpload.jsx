@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { useAuth } from '../../context/AuthContext'
-import { createUpload, updateUpload, getUploadsByMember, getTasksByDept, getMembersByDept } from '../../firebase/firestore'
+import { createUpload, updateUpload, updateTask, getUploadsByMember, getTasksByDept, getMembersByDept } from '../../firebase/firestore'
 import { collection, query, where, orderBy, getDocs } from 'firebase/firestore'
 import { db } from '../../firebase/config'
 import UploadZone from '../../components/uploads/UploadZone'
@@ -55,7 +55,6 @@ const WorkUpload = ({ viewAll = false }) => {
       })
 
       // Also save work link directly on the task so everyone can see it
-      const { updateTask } = await import('../../firebase/firestore')
       await updateTask(user.companyId, selectedTask, {
         workLink:    link,
         workTitle:   title,
