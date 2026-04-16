@@ -1,84 +1,47 @@
-import { useRef, useState } from 'react'
+import { useState } from 'react'
 
-const ALLOWED_TYPES = {
-  'image/jpeg': 'Image',
-  'image/png':  'Image',
-  'video/mp4':  'Video',
-  'application/pdf': 'PDF',
-  'application/msword': 'Word',
-  'application/vnd.openxmlformats-officedocument.wordprocessingml.document': 'Word',
-}
+const UploadZone = ({ onLinkSubmitted, disabled }) => {
+  const [link,  setLink]  = useState('')
+  const [title, setTitle] = useState('')
+  const [error, setError] = useState('')
 
-const MAX_SIZE = 50 * 1024 * 1024 // 50MB
+  const validate = (url) => {
+    try { new URL(url); return true }
+    catch { return false }
+  }
 
-const UploadZone = ({ onFileSelected, disabled }) => {
-  const inputRef  = useRef()
-  const [dragging, setDragging] = useState(false)
-  const [error,    setError]    = useState('')
-
-  const validate = (file) => {
-    if (!ALLOWED_TYPES[file.type]) {
-      setError('File type not allowed. Use JPG, PNG, MP4, PDF, or Word.')
-      return false
-    }
-    if (file.size > MAX_SIZE) {
-      setError('File too large. Max 50MB.')
-      return false
-    }
+  const handleSubmit = () => {
+    if (!title.trim()) { setError('Please add a title for your work.'); return }
+    if (!link.trim())  { setError('Please paste a link.'); return }
+    if (!validate(link.trim())) { setError('Please enter a valid URL starting with https://'); return }
     setError('')
-    return true
-  }
-
-  const handleFile = (file) => {
-    if (file && validate(file)) {
-      onFileSelected(file, ALLOWED_TYPES[file.type])
-    }
-  }
-
-  const onDrop = (e) => {
-    e.preventDefault()
-    setDragging(false)
-    const file = e.dataTransfer.files[0]
-    handleFile(file)
+    onLinkSubmitted({ link: link.trim(), title: title.trim() })
+    setLink('')
+    setTitle('')
   }
 
   return (
     <div>
-      <div
-        onClick={() => !disabled && inputRef.current.click()}
-        onDragOver={(e) => { e.preventDefault(); setDragging(true) }}
-        onDragLeave={() => setDragging(false)}
-        onDrop={onDrop}
-        style={{
-          border: `2px dashed ${dragging ? '#378ADD' : 'rgba(0,0,0,0.15)'}`,
-          borderRadius: '12px',
-          padding: '28px',
-          textAlign: 'center',
-          cursor: disabled ? 'not-allowed' : 'pointer',
-          background: dragging ? '#EEF6FF' : 'transparent',
-          transition: 'all 0.15s',
-          opacity: disabled ? 0.5 : 1,
-        }}
-      >
-        <div style={{ fontSize: '14px', fontWeight: 500, marginBottom: '4px' }}>
-          Click or drag file to upload
-        </div>
-        <div style={{ fontSize: '12px', color: '#888' }}>
-          JPG, PNG, MP4, PDF, Word · Max 50MB
-        </div>
+      <div style={{ marginBottom:'10px' }}>
+        <label style={lbl}>Work title</label>
+        <input style={inp} placeholder="e.g. Homepage design v2, Product launch reel..." value={title} onChange={e => setTitle(e.target.value)} disabled={disabled} />
       </div>
-      {error && (
-        <div style={{ fontSize: '12px', color: '#791F1F', marginTop: '6px' }}>{error}</div>
-      )}
-      <input
-        ref={inputRef}
-        type="file"
-        accept=".jpg,.jpeg,.png,.mp4,.pdf,.doc,.docx"
-        style={{ display: 'none' }}
-        onChange={(e) => handleFile(e.target.files[0])}
-      />
+      <div style={{ marginBottom:'10px' }}>
+        <label style={lbl}>Paste link to your work</label>
+        <input style={inp} placeholder="https://drive.google.com/... or https://figma.com/..." value={link} onChange={e => setLink(e.target.value)} disabled={disabled} onKeyDown={e => e.key==='Enter' && handleSubmit()} />
+      </div>
+      <div style={{ fontSize:'11px', color:'#888', marginBottom:'10px', padding:'8px 12px', background:'#F8F8F6', borderRadius:'6px' }}>
+        Works with: Google Drive · Figma · YouTube · Dropbox · Notion · Canva · Any public link
+      </div>
+      {error && <div style={{ fontSize:'12px', color:'#791F1F', marginBottom:'8px' }}>{error}</div>}
+      <button onClick={handleSubmit} disabled={disabled} style={{ padding:'8px 18px', fontSize:'13px', fontWeight:500, background: disabled?'#ccc':'#378ADD', color:'#fff', border:'none', borderRadius:'8px', cursor: disabled?'not-allowed':'pointer' }}>
+        Submit for review
+      </button>
     </div>
   )
 }
+
+const lbl = { fontSize:'11px', fontWeight:500, color:'#666', display:'block', marginBottom:'4px', textTransform:'uppercase', letterSpacing:'0.04em' }
+const inp = { width:'100%', padding:'9px 12px', fontSize:'13px', border:'0.5px solid rgba(0,0,0,0.2)', borderRadius:'8px', fontFamily:'inherit', boxSizing:'border-box' }
 
 export default UploadZone
