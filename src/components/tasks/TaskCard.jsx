@@ -85,7 +85,7 @@ const TaskCard = ({ task, currentUser, members, onAction }) => {
               borderRadius:'6px', textDecoration:'none', fontWeight:500,
             }}
           >
-            View work →
+            View work &rarr;
           </a>
         </div>
       )}
