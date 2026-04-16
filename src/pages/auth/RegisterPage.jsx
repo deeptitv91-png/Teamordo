@@ -70,7 +70,7 @@ const RegisterPage = () => {
     window.onCaptchaExpired = () => setCaptcha(false)
   }, [])
 
-  const loginUrl = credentials ? `teamordo.vercel.app/${credentials.slug}` : ''
+  const loginUrl = credentials ? `teamordo.com/${credentials.slug}` : ''
 
   return (
     <div style={{ minHeight:'100vh', background:'#F8F8F6', display:'flex', alignItems:'center', justifyContent:'center', padding:'20px', fontFamily:'system-ui,sans-serif' }}>
@@ -115,7 +115,7 @@ const RegisterPage = () => {
               <div style={{ background:'#EEF4FF', border:'1px solid #C7DCFF', borderRadius:'10px', padding:'16px', marginBottom:'16px' }}>
                 <div style={{ fontSize:'11px', fontWeight:600, color:'#0C447C', marginBottom:'6px', textTransform:'uppercase', letterSpacing:'0.04em' }}>Your company login URL</div>
                 <div style={{ fontSize:'16px', fontWeight:600, color:'#0a0a0a', fontFamily:'monospace', marginBottom:'6px' }}>
-                  teamordo.vercel.app/{credentials.slug}
+                  teamordo.com/{credentials.slug}
                 </div>
                 <div style={{ fontSize:'11px', color:'#666' }}>Share this URL with all your team members. They login here with their Member ID and password.</div>
               </div>

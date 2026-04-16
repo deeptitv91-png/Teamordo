@@ -13,7 +13,8 @@ const LandingPage = () => {
   }, [])
 
   const scrollTo = (id) => {
-    document.getElementById(id)?.scrollIntoView({ behavior: 'smooth' })
+    const el = document.getElementById(id)
+    if (el) { el.scrollIntoView({ behavior: 'smooth' }) }
     setMenuOpen(false)
   }
 
@@ -58,12 +59,15 @@ const LandingPage = () => {
           </div>
           <div style={{ display:'flex', gap:'32px', alignItems:'center' }}>
             {['Features','How it works','Pricing','Contact'].map(item => (
-              <button key={item} onClick={() => scrollTo(item.toLowerCase().replace(' ','-'))} style={{ background:'none', border:'none', fontSize:'14px', color:'#555', cursor:'pointer', fontFamily:'inherit' }}>
+              <button key={item} onClick={() => scrollTo(item.toLowerCase().replace(/ /g,'-'))} style={{ background:'none', border:'none', fontSize:'14px', color:'#555', cursor:'pointer', fontFamily:'inherit' }}>
                 {item}
               </button>
             ))}
             <button onClick={() => navigate('/login')} style={{ background:'none', border:'0.5px solid rgba(0,0,0,0.2)', borderRadius:'8px', padding:'7px 16px', fontSize:'13px', cursor:'pointer', fontFamily:'inherit', color:'#333' }}>
               Login
+            </button>
+            <button onClick={() => navigate('/register')} style={{ background:'none', border:'0.5px solid rgba(0,0,0,0.2)', borderRadius:'8px', padding:'7px 16px', fontSize:'13px', cursor:'pointer', fontFamily:'inherit', color:'#333' }}>
+              Register
             </button>
             <button onClick={() => navigate('/register')} style={{ background:'#1a1a1a', border:'none', borderRadius:'8px', padding:'7px 18px', fontSize:'13px', fontWeight:500, cursor:'pointer', fontFamily:'inherit', color:'#fff' }}>
               Get started free
