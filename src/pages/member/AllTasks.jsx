@@ -18,6 +18,8 @@ const AllTasks = () => {
 
   const isDeptHead = user?.role === 'dept_head'
   const isAdmin    = user?.role === 'admin'
+  const isManager  = ['manager','lead'].includes(user?.category)
+  const canAct     = isDeptHead || isManager
 
   const loadData = async () => {
     if (!user) return
@@ -83,9 +85,9 @@ const AllTasks = () => {
       <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', marginBottom:'16px' }}>
         <div>
           <div style={{ fontSize:'16px', fontWeight:500 }}>All tasks</div>
-          {!isDeptHead && <div style={{ fontSize:'12px', color:'#888', marginTop:'2px' }}>Read-only view. Login with your own ID to take actions.</div>}
+          {!canAct && <div style={{ fontSize:'12px', color:'#888', marginTop:'2px' }}>Read-only view. Login with your own ID to take actions.</div>}
         </div>
-        {isDeptHead && !showForm && (
+        {canAct && !showForm && (
           <button onClick={() => setForm(true)} style={{ padding:'7px 14px', fontSize:'12px', fontWeight:500, background:'#378ADD', color:'#fff', border:'none', borderRadius:'8px', cursor:'pointer' }}>
             + New task
           </button>
@@ -94,7 +96,7 @@ const AllTasks = () => {
 
       {notify && <Notify message={notify.msg} type={notify.type} onDone={() => setNotify(null)} />}
 
-      {showForm && isDeptHead && (
+      {showForm && canAct && (
         <TaskForm members={assignableMembers} currentUser={user} onSubmit={handleCreate} onCancel={() => setForm(false)} />
       )}
 
@@ -118,7 +120,7 @@ const AllTasks = () => {
         <TaskCard
           key={t.id}
           task={t}
-          currentUser={isDeptHead ? user : null}
+          currentUser={canAct ? user : null}
           members={allUsers}
           onAction={handleAction}
         />
