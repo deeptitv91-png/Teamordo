@@ -5,6 +5,7 @@ const LINKS = {
     { to: '/admin',             label: 'Overview' },
     { to: '/admin/departments', label: 'Departments' },
     { to: '/admin/reports',     label: 'Reports' },
+    { to: '/admin/upgrade',     label: 'Upgrade plan' },
   ],
   dept_head: [
     { to: '/dept',          label: 'Dashboard' },

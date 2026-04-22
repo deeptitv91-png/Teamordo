@@ -9,6 +9,7 @@ import LoginPage           from './pages/auth/LoginPage'
 import RegisterPage        from './pages/auth/RegisterPage'
 import CompanyLoginPage    from './pages/auth/CompanyLoginPage'
 import AdminDashboard      from './pages/admin/AdminDashboard'
+import UpgradePlan         from './pages/admin/UpgradePlan'
 import MemberManager       from './pages/department/MemberManager'
 import DeptDashboard       from './pages/department/DeptDashboard'
 import MyTasks             from './pages/member/MyTasks'
@@ -53,6 +54,7 @@ const App = () => (
           <Route path="/admin"             element={wrap(['admin'], AdminDashboard)} />
           <Route path="/admin/departments" element={wrap(['admin'], AdminDashboard)} />
           <Route path="/admin/reports"     element={wrap(['admin'], ReportsPage)} />
+          <Route path="/admin/upgrade"     element={wrap(['admin'], UpgradePlan)} />
 
           {/* Dept head */}
           <Route path="/dept"         element={wrap(['dept_head'], DeptDashboard)} />
