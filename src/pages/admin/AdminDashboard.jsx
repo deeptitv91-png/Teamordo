@@ -46,11 +46,12 @@ const AdminDashboard = () => {
 
   const handleAddDept = async () => {
     if (!deptName.trim()) return
-    // Check plan limit
-    const plan = company?.plan || 'free'
+    // Check plan limit from fresh Firebase data
+    const freshCompany = await getCompany(user.companyId)
+    const plan = freshCompany?.plan || 'free'
     const limit = DEPT_LIMITS[plan] || 1
     if (depts.length >= limit) {
-      setNotify({ msg:`Your ${plan} plan allows up to ${limit} department(s). Please upgrade your plan to add more departments.`, type:'err' }); return
+      setNotify({ msg:'Your ' + plan + ' plan allows up to ' + limit + ' department(s). Go to Upgrade plan to add more.', type:'err' }); return
     }
     setAdding(true)
     try {
