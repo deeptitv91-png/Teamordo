@@ -72,6 +72,7 @@ const AdminDashboard = () => {
         deptId,
         userId:    deptId,
         category:  'manager',
+        password:  password,
       })
 
       await updateDoc(doc(db, 'companies', user.companyId), { deptCounter: increment(1) })
