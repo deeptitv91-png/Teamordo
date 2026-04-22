@@ -42,8 +42,16 @@ const AdminDashboard = () => {
 
   useEffect(() => { loadData() }, [user])
 
+  const DEPT_LIMITS = { free:1, starter:5, growth:10, enterprise:99999 }
+
   const handleAddDept = async () => {
     if (!deptName.trim()) return
+    // Check plan limit
+    const plan = company?.plan || 'free'
+    const limit = DEPT_LIMITS[plan] || 1
+    if (depts.length >= limit) {
+      setNotify({ msg:`Your ${plan} plan allows up to ${limit} department(s). Please upgrade your plan to add more departments.`, type:'err' }); return
+    }
     setAdding(true)
     try {
       const counter = (company?.deptCounter || 0) + 1

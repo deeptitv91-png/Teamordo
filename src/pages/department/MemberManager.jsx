@@ -24,10 +24,19 @@ const MemberManager = () => {
 
   useEffect(() => { if (user) loadMembers() }, [user])
 
+  const PLAN_LIMITS = { free:10, starter:50, growth:100, enterprise:99999 }
+
   const handleAdd = async (e) => {
     e.preventDefault()
     if (!form.name || !form.email || !form.designation) {
       setNotify({ msg:'Please fill all fields.', type:'err' }); return
+    }
+    // Check plan limit
+    const company = await getCompany(user.companyId)
+    const plan = company?.plan || 'free'
+    const limit = PLAN_LIMITS[plan] || 10
+    if (members.length >= limit) {
+      setNotify({ msg:`Your ${plan} plan allows up to ${limit} members. Please upgrade your plan to add more members.`, type:'err' }); return
     }
     setLoading(true)
     try {
