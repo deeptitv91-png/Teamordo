@@ -25,11 +25,6 @@ const RegisterPage = () => {
     if (!captchaVerified) {
       setNotify({ msg:'Please complete the reCAPTCHA verification.', type:'err' }); return
     }
-    // Validate dept count against free plan limit
-    if (parseInt(form.numDepts) > 1) {
-      setNotify({ msg:'Free plan allows only 1 department. You can upgrade your plan after registration to add more departments.', type:'warn' })
-    }
-
     setLoading(true)
     try {
       const companyId = generateCompanyId(form.companyName)
@@ -37,10 +32,13 @@ const RegisterPage = () => {
       const adminId   = companyId
       const adminPw   = generatePassword(form.companyName)
 
+      // Free plan — max 1 department at registration
+      const allowedDepts = 1
+
       await createCompany(companyId, {
         name:        form.companyName,
         address:     form.address,
-        numDepts:    parseInt(form.numDepts),
+        numDepts:    allowedDepts,
         adminEmail:  form.adminEmail,
         companyId,
         slug,
@@ -57,7 +55,7 @@ const RegisterPage = () => {
         email:     form.adminEmail,
       })
 
-      setCredentials({ companyId, adminId, adminPw, slug, numDepts: parseInt(form.numDepts) })
+      setCredentials({ companyId, adminId, adminPw, slug, numDepts: 1 })
     } catch (err) {
       setNotify({ msg:'Registration failed: ' + err.message, type:'err' })
     } finally {
@@ -98,7 +96,7 @@ const RegisterPage = () => {
               {[
                 { key:'companyName', label:'Company name',          placeholder:'e.g. Acme Technologies Pvt Ltd' },
                 { key:'adminEmail',  label:'Admin email',           placeholder:'admin@yourcompany.com' },
-                { key:'numDepts',    label:'Number of departments (Free plan: 1 dept)', placeholder:'e.g. 1', type:'number' },
+                { key:'numDepts',    label:'Number of departments', placeholder:'e.g. 1', type:'number' },
               ].map(f => (
                 <div key={f.key} style={{ marginBottom:'12px' }}>
                   <label style={lbl}>{f.label}</label>
